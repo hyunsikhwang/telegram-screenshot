@@ -84,10 +84,10 @@ async def capture_telegram_light_font(url):
             await browser.close()
 
 # --- Streamlit UI ---
-st.title("📸 Telegram 캡처 (Pretendard Light)")
+st.title("📸 Telegram 캡처")
 st.markdown("텔레그램 게시물 링크를 입력하면 **Pretendard Light** 폰트를 적용해 캡처합니다.")
 
-target_url = st.text_input("텔레그램 링크 입력", value="https://t.me/s/insidertracking/35271")
+target_url = st.text_input("텔레그램 링크 입력", value="", placeholder="https://t.me/s/banjang9/3895")
 
 if st.button("캡처 시작"):
     if target_url:
