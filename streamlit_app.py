@@ -91,6 +91,13 @@ target_url = st.text_input("텔레그램 링크 입력", value="", placeholder="
 
 if st.button("캡처 시작"):
     if target_url:
+        # URL 형식 변환: t.me/채널/글번호 → t.me/s/채널/글번호
+        if "t.me/" in target_url and "/s/" not in target_url:
+            # URL에 "/s" 추가
+            parts = target_url.split("t.me/")
+            if len(parts) == 2:
+                target_url = f"https://t.me/s/{parts[1]}"
+
         # 비동기 함수 실행을 위한 루프 처리
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
