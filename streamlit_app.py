@@ -78,7 +78,7 @@ async def capture_telegram_light_font(url):
             # 뷰포트 크기 조정 (요소의 전체 높이 + 여백)
             await page.set_viewport_size({
                 "width": 1920,
-                "height": bounding_box['height'] + 100  # 여백 추가
+                "height": int(bounding_box['height']) + 100  # 여백 추가
             })
 
             # 요소 스크롤하여 보이도록 설정
