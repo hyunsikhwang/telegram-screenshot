@@ -65,9 +65,9 @@ async def capture_telegram_light_font(url):
 
             # 요소 대기
             await page.wait_for_selector(selector, timeout=15000)
-            
-            # 폰트 렌더링 및 레이아웃 안정을 위해 잠시 대기
-            await asyncio.sleep(2)
+
+            # 폰트 렌더링 및 레이아웃 안정을 위해 충분한 대기 시간 추가
+            await asyncio.sleep(5)
 
             # 스크린샷 캡처
             element = page.locator(selector)
@@ -75,14 +75,24 @@ async def capture_telegram_light_font(url):
             # 요소의 전체 크기 계산
             bounding_box = await element.bounding_box()
 
+            # 요소의 크기가 유효한지 확인
+            if bounding_box is None or bounding_box['height'] == 0:
+                # 기본 값 설정
+                element_height = 2000  # 기본 높이
+            else:
+                element_height = int(bounding_box['height'])
+
             # 뷰포트 크기 조정 (요소의 전체 높이 + 여백)
             await page.set_viewport_size({
                 "width": 1920,
-                "height": int(bounding_box['height']) + 100  # 여백 추가
+                "height": element_height + 100  # 여백 추가
             })
 
             # 요소 스크롤하여 보이도록 설정
             await element.evaluate('element => element.scrollIntoView()')
+
+            # 스크롤 후 대기
+            await asyncio.sleep(2)
 
             # 요소 전체 캡처
             await element.screenshot(path=output_filename)
