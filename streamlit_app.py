@@ -71,6 +71,20 @@ async def capture_telegram_light_font(url):
 
             # 스크린샷 캡처
             element = page.locator(selector)
+
+            # 요소의 전체 크기 계산
+            bounding_box = await element.bounding_box()
+
+            # 뷰포트 크기 조정 (요소의 전체 높이 + 여백)
+            await page.set_viewport_size({
+                "width": 1920,
+                "height": bounding_box['height'] + 100  # 여백 추가
+            })
+
+            # 요소 스크롤하여 보이도록 설정
+            await element.evaluate('element => element.scrollIntoView()')
+
+            # 요소 전체 캡처
             await element.screenshot(path=output_filename)
             
             status_text.success("✅ 캡처 완료!")
