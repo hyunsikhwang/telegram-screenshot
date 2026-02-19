@@ -89,7 +89,20 @@ async def capture_telegram_light_font(url):
             })
 
             # 요소 스크롤하여 보이도록 설정
-            await element.evaluate('element => element.scrollIntoView()')
+            await element.evaluate(
+                """(element) => {
+                    const safetyMargin = 8;
+                    const header = document.querySelector('.tgme_header');
+                    const headerHeight = header ? header.getBoundingClientRect().height : 0;
+                    const elementTop = element.getBoundingClientRect().top + window.scrollY;
+                    const targetTop = Math.max(0, elementTop - headerHeight - safetyMargin);
+
+                    window.scrollTo({
+                        top: targetTop,
+                        behavior: "auto"
+                    });
+                }"""
+            )
 
             # 스크롤 후 대기
             await asyncio.sleep(2)
