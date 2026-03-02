@@ -46,18 +46,26 @@ async def capture_telegram_light_font(url):
             await page.goto(url, wait_until="domcontentloaded") # 속도를 위해 domcontentloaded 사용
 
             # ✅ 핵심: 웹 폰트(CDN) 로드 및 CSS 강제 주입
-            # 로컬 폰트가 없으므로 CDN(@import)을 사용해야 서버에서 렌더링 됩니다.
+            # Pretendard를 기본으로 유지하되 CJK 폴백을 추가해 한자 깨짐을 방지합니다.
             await page.add_style_tag(content="""
                 @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
-                
-                body, div, span, a, p, h1, h2, h3, h4, h5, h6, b, strong, i, em, .tgme_widget_message_text {
-                    font-family: 'Pretendard', sans-serif !important;
+                @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap');
+
+                body,
+                .tgme_page,
+                .tgme_channel_info_header_title,
+                .tgme_widget_message_author,
+                .tgme_widget_message_link,
+                .tgme_widget_message_text,
+                .tgme_widget_message_wrap,
+                .tgme_widget_message_wrap * {
+                    font-family: 'Pretendard', 'Noto Sans TC', 'Noto Sans SC', 'Noto Sans JP', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif !important;
                     font-weight: 300 !important; /* Light */
                     letter-spacing: -0.3px !important;
                     line-height: 1.6 !important;
                 }
             """)
-            status_text.text("💉 CSS 주입 완료: Pretendard Light (CDN) 적용")
+            status_text.text("💉 CSS 주입 완료: Pretendard + CJK fallback 적용")
 
             # 선택자 로직
             post_identifier = "/".join(url.split("/")[-2:]) # 예: insidertracking/35271
@@ -66,8 +74,30 @@ async def capture_telegram_light_font(url):
             # 요소 대기
             await page.wait_for_selector(selector, timeout=15000)
 
-            # 폰트 렌더링 및 레이아웃 안정을 위해 충분한 대기 시간 추가
-            await asyncio.sleep(5)
+            # document.fonts.ready 우선 대기, 실패 시 기존 sleep fallback 유지
+            fonts_ready = False
+            try:
+                fonts_ready = await page.evaluate("""
+                    async () => {
+                        if (!document.fonts || !document.fonts.ready) return false;
+                        try {
+                            await Promise.race([
+                                document.fonts.ready,
+                                new Promise((resolve) => setTimeout(resolve, 4000))
+                            ]);
+                            return true;
+                        } catch (e) {
+                            return false;
+                        }
+                    }
+                """)
+            except Exception:
+                fonts_ready = False
+
+            if fonts_ready:
+                await asyncio.sleep(1)
+            else:
+                await asyncio.sleep(5)
 
             # 스크린샷 캡처
             element = page.locator(selector)
