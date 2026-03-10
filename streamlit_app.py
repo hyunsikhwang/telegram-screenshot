@@ -18,6 +18,7 @@ install_playwright_browser()
 
 async def capture_telegram_light_font(url):
     output_filename = "telegram_screenshot.png"
+    dark_navy_background = "#0b1630"
     
     # 상태 메시지 표시를 위한 placeholder
     status_text = st.empty()
@@ -51,6 +52,18 @@ async def capture_telegram_light_font(url):
                 @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
                 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap');
 
+                html,
+                body,
+                .tgme_page,
+                .tgme_background_wrap,
+                .tgme_container,
+                .tgme_channel_history,
+                .tgme_channel_history_wrap,
+                .tgme_widget_message_wrap {
+                    background: #0b1630 !important;
+                    background-image: none !important;
+                }
+
                 body,
                 .tgme_page,
                 .tgme_channel_info_header_title,
@@ -73,6 +86,13 @@ async def capture_telegram_light_font(url):
 
             # 요소 대기
             await page.wait_for_selector(selector, timeout=15000)
+            await page.locator(selector).evaluate(
+                """(element, backgroundColor) => {
+                    element.style.background = backgroundColor;
+                    element.style.backgroundImage = "none";
+                }""",
+                dark_navy_background
+            )
 
             # document.fonts.ready 우선 대기, 실패 시 기존 sleep fallback 유지
             fonts_ready = False
